@@ -8,16 +8,39 @@ struct RecordType
 	int		order; 
 };
 
+struct RecordTypeNode {
+    struct RecordType* data;
+    struct RecordTypeNode* next;
+};
+
 // Fill out this structure
 struct HashType
 {
-
+    struct RecordTypeNode* head;
 };
 
-// Compute the hash function
-int hash(int x)
+void insert(struct HashType* this, int size, struct RecordType* value) 
 {
+    int index = hash(value->id, size);
+    struct RecordTypeNode* node = malloc(sizeof(struct RecordTypeNode));
+    node->data = value;
+    node->next = NULL;
 
+    if (this[index].head == NULL)
+    {
+        this[index].head = node;
+    }
+    else
+    {
+        node->next = this[index].head;
+        this[index].head = node;
+    }
+}
+
+// Compute the hash function
+int hash(int x, int hashSize)
+{
+    return x % hashSize;
 }
 
 // parses input file to an integer array
@@ -75,20 +98,37 @@ void printRecords(struct RecordType pData[], int dataSz)
 // index x -> id, name, order -> id, name, order ....
 void displayRecordsInHash(struct HashType *pHashArray, int hashSz)
 {
-	int i;
-
-	for (i=0;i<hashSz;++i)
-	{
-		// if index is occupied with any records, print all
-	}
+	for (int i = 0; i < hashSz; i++)
+    {
+        struct RecordTypeNode* elem = pHashArray[i].head;
+        while (elem != NULL)
+        {
+            printf("index %d -> %d, %c, %d\n", i, elem->data->id, elem->data->name, elem->data->order);
+            elem = elem->next;
+        }
+    }
 }
 
 int main(void)
 {
 	struct RecordType *pRecords;
 	int recordSz = 0;
+    int hashSz = 15;
 
 	recordSz = parseData("input.txt", &pRecords);
 	printRecords(pRecords, recordSz);
-	// Your hash implementation
+	
+    struct HashType* arr = malloc(sizeof(struct HashType) * hashSz);
+    for (int i = 0; i < hashSz; i++)
+    {
+        arr[i].head = NULL;
+    }
+
+    for (int i = 0; i < recordSz; i++) {
+        insert(arr, hashSz, &pRecords[i]);
+    }
+
+    displayRecordsInHash(arr, hashSz);
+
+    return 0;
 }
